@@ -1,0 +1,14 @@
+# Dependencies
+node_modules/
+*/node_modules/
+# Keep environment variables out of version control
+.env
+*/.env
+
+backend/generated/prisma
+
+# Build outputs
+dist/
+build/
+*/dist/
+*/build/

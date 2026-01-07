@@ -1,0 +1,108 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  
+}
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  users       User[]
+  locations   Location[]
+  ingredients Ingredient[]
+  menuItems   MenuItem[]
+
+  @@map("organizations")
+}
+
+model User {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  name           String
+  email          String   @unique
+  password       String
+  role           String
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relation
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@map("users")
+}
+
+model Location {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  name           String
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relation
+  organization Organization @relation(fields: [organizationId], references: [id])
+  mixMappings  MixMapping[]
+
+  @@map("locations")
+}
+
+model Ingredient {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  name           String
+  price          Float
+  unit           String
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relation
+  organization Organization @relation(fields: [organizationId], references: [id])
+  mixMappings  MixMapping[]
+
+  @@map("ingredients")
+}
+
+model MenuItem {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  name           String
+  description    String?
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relation
+  organization Organization @relation(fields: [organizationId], references: [id])
+  mixMappings  MixMapping[]
+
+  @@map("menu_items")
+}
+
+model MixMapping {
+  id           String   @id @default(uuid())
+  menuItemId   String   @map("menu_item_id")
+  locationId   String   @map("location_id")
+  ingredientId String   @map("ingredient_id")
+  quantity     Float
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  menuItem   MenuItem   @relation(fields: [menuItemId], references: [id])
+  location   Location   @relation(fields: [locationId], references: [id])
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id])
+
+  @@map("mix_mappings")
+}
