@@ -22,14 +22,14 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        const locations = await prisma.location.findMany({ 
+        const ingredients = await prisma.ingredient.findMany({
             where: { organizationId: user.organizationId }
         });
 
-        return res.status(200).json(locations);
+        return res.status(200).json(ingredients);
     } catch (error) {
-        console.error('Error fetching locations:', error);
-        return res.status(500).json({ error: 'Failed to fetch locations' });
+        console.error('Error fetching ingredients', error)
+        return res.status(500).json({ error: 'Failed to fetch ingredients' })
     }
 });
 
@@ -38,31 +38,29 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
         if (!req.userId) {
             return res.status(401).json({ error: 'Unauthorized' });
         }
+        const { name, price, unit } = req.body;
 
-        const { name } = req.body;
-
-        // Get user to find organizationId
-        const user = await prisma.user.findUnique({ 
+        const user = await prisma.user.findUnique({
             where: { id: req.userId }
         });
 
         if (!user) {
-            return res.status(404).json({ error: 'User not found '});
+            return res.status(404).json({ error: 'User not found' })
         }
 
-        // Create the location
-        const location = await prisma.location.create({
+        const ingredient = await prisma.ingredient.create({
             data: {
                 name,
+                price,
+                unit,
                 organizationId: user.organizationId
             }
         });
-        
-        return res.status(201).json(location)
+        return res.status(201).json(ingredient)
     } catch (error) {
-        console.error('Error creating location:', error);
-        return res.status(500).json({ error: 'Failed to create location' });
+        console.error('Error creating ingredient', error)
+        res.status(500).json({ error: 'Failed to create ingredient' });
     }
 });
 
-export default router
+export default router;
