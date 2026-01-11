@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/auth.js';
 import locationRoutes from './routes/locations.js';
 import ingredientRoutes from './routes/ingredients.js';
+import menuItemRoutes from './routes/menuItems.js';
 
 // Load environment variables
 dotenv.config();
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/locations', locationRoutes);
 app.use('/api/ingredients', ingredientRoutes);
+app.use('/api/menu-items', menuItemRoutes)
 
 // Test route
 app.get('/', (req, res) => {
