@@ -8,7 +8,7 @@
     organizationId: string;
  }
 
-export default function Dashboard() {
+function Dashboard() {
     const navigate = useNavigate();
 
     const getUserFromStorage = (): User | null => {
@@ -64,3 +64,4 @@ export default function Dashboard() {
   )
 }
 
+export default Dashboard;
