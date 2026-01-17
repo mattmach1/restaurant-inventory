@@ -141,7 +141,7 @@ router.post('/copy', authMiddleware, async (req: AuthRequest, res: Response) => 
         const newMappings = await prisma.mixMapping.createMany({
             data: existingMappings.map(mapping => ({
                 menuItemId: mapping.menuItemId,
-                locationId: mapping.locationId,
+                locationId: toLocationId,
                 ingredientId: mapping.ingredientId,
                 quantity: mapping.quantity
             }))
@@ -155,6 +155,105 @@ router.post('/copy', authMiddleware, async (req: AuthRequest, res: Response) => 
         console.error('Error copying menu', error);
         return res.status(500).json({ error: 'Failed to copy menu' });
     }
+});
+
+router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(404).json({ error: 'Mix mapping ID not found' });
+    }
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId }
+    })
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const mixMapping = await prisma.mixMapping.findUnique({
+      where: {id: id }
+    });
+
+    if (!mixMapping) {
+      return res.status(404).json({ error: 'Mix mapping not found' })
+    }
+
+    const location = await prisma.location.findUnique({
+      where: { id: mixMapping.locationId }
+    });
+
+    if(!location) {
+      return res.status(404).json({ error: 'Location not found' })
+    }
+
+    if (location.organizationId !== user.organizationId ) {
+      return res.status(403).json({ error: 'Access denied' })
+    }
+
+    await prisma.mixMapping.delete({
+      where: { id: id }
+    });
+
+    return res.status(200).json({ message: 'Mix mapping deleted successfully' });
+
+  } catch (error) {
+    console.error('Error deleting mix mapping', error);
+    return res.status(500).json({ error: 'Faileed to delete mix mapping' });
+  }
+});
+
+router.patch('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const { id } = req.params;
+    const { quantity } = req.body;
+
+    if (!id) {
+      return res.status(404).json({ error: 'Mix mapping ID not found' })
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId }
+    })
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' })
+    }
+
+    const mixMapping = await prisma.mixMapping.findUnique({
+      where: { id: id }
+    })
+
+    if (!mixMapping) {
+      return res.status(404).json({ error: 'Mix mapping not found' });
+    }
+
+    const location = await prisma.location.findUnique({
+      where: { id: mixMapping.locationId }
+    });
+
+    if (!location || location.organizationId !== user.organizationId) {
+      return res.status(403).json({ error: 'Access denied' })
+    }
+
+    const updatedMixMapping = await prisma.mixMapping.update({
+      where: { id: id },
+      data: { quantity: parseFloat(quantity) }
+    });
+
+    return res.status(200).json(updatedMixMapping);
+  } catch (error) {
+    console.error('Error updating mix mapping', error);
+    return res.status(500).json({error: 'Failed to update mix mapping' });
+  }
 });
 
 export default router;
