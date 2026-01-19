@@ -14,6 +14,13 @@ interface Ingredient {
 
 export default function Ingredients() {
   const [isAdding, setIsAdding] = useState(false);
+  const [editingIngredientId, setEditingIngredientId] = useState<string | null>(
+    null
+  );
+  const [editName, setEditName] = useState("");
+  const [editPrice, setEditPrice] = useState("");
+  const [editUnit, setEditUnit] = useState("");
+
   const [formData, setFormData] = useState({
     name: "",
     price: "",
@@ -30,6 +37,11 @@ export default function Ingredients() {
       return response.data;
     },
   });
+
+   // Sort ingredients alphabetically
+  const sortedIngredients = ingredients?.sort((a, b) =>
+    a.name.localeCompare(b.name)
+  );
 
   // Create ingredient mutation
   const createIngredientMutation = useMutation({
@@ -59,6 +71,80 @@ export default function Ingredients() {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     navigate("/login");
+  };
+
+  // Delete mutation
+  const deleteIngredientMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await api.delete(`/ingredients/${id}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ingredients"] });
+    },
+  });
+
+  // Delete ingredient
+  const handleDelete = (id: string) => {
+    if (window.confirm("Delete this ingredient?")) {
+      deleteIngredientMutation.mutate(id);
+    }
+  };
+
+  // Edit mutation
+  const updateIngredientMutation = useMutation({
+    mutationFn: async (data: {
+      id: string;
+      name: string;
+      price: number;
+      unit: string;
+    }) => {
+      const response = await api.patch(`/ingredients/${data.id}`, {
+        name: data.name,
+        price: data.price,
+        unit: data.unit,
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ingredients"] });
+      setEditingIngredientId(null);
+      setEditName("");
+      setEditPrice("");
+      setEditUnit("");
+    },
+  });
+
+  // Edit ingredient
+  const handleEdit = (ingredient: Ingredient) => {
+    setEditingIngredientId(ingredient.id);
+    setEditName(ingredient.name);
+    setEditPrice(ingredient.price.toString());
+    setEditUnit(ingredient.unit);
+  };
+
+  // Save ingredient edit
+  const handleSaveEdit = () => {
+     console.log('Save clicked', { editingIngredientId, editName, editPrice, editUnit });
+    if (editingIngredientId && editName && editPrice && editUnit) {
+      console.log('Calling mutation');
+      updateIngredientMutation.mutate({
+        id: editingIngredientId,
+        name: editName,
+        price: parseFloat(editPrice),
+        unit: editUnit,
+      });
+    } else {
+    console.log('Validation failed');
+    }
+  };
+
+  // Cancel ingredient edit
+  const handleCancelEdit = () => {
+    setEditingIngredientId(null);
+    setEditName("");
+    setEditPrice("");
+    setEditUnit("");
   };
 
   if (isLoading) return <div>Loading...</div>;
@@ -169,26 +255,84 @@ export default function Ingredients() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Unit
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Added
-                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {ingredients.map((ingredient) => (
+                  {sortedIngredients?.map((ingredient) => (
                     <tr key={ingredient.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {ingredient.name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        ${ingredient.price.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {ingredient.unit}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(ingredient.createdAt).toLocaleDateString()}
-                      </td>
+                      {editingIngredientId === ingredient.id ? (
+                        <>
+                          <td className="px-6 py-4">
+                            <input
+                              type="text"
+                              value={editName}
+                              onChange={(e) => setEditName(e.target.value)}
+                              className="px-2 py-1 border border-gray-300 rounded"
+                            />
+                          </td>
+                          <td className="px-6 py-4">
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={editPrice}
+                              onChange={(e) => setEditPrice(e.target.value)}
+                              className="px-2 py-1 border border-gray-300 rounded"
+                            />
+                          </td>
+                          <td className="px-6 py-4">
+                            <input
+                              type="text"
+                              value={editUnit}
+                              onChange={(e) => setEditUnit(e.target.value)}
+                              className="px-2 py-1 border border-gray-300 rounded"
+                            />
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex gap-1">
+                              <button
+                                onClick={handleSaveEdit}
+                                className="bg-green-600 hover:bg-green-700 text-white rounded py-1 px-3"
+                              >
+                                Save
+                              </button>
+                              <button
+                                onClick={handleCancelEdit}
+                                className="bg-gray-500 hover:bg-gray-600 text-white rounded py-1 px-3"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {ingredient.name}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            ${ingredient.price.toFixed(2)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {ingredient.unit}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => handleEdit(ingredient)}
+                                className="bg-blue-500 hover:bg-blue-600 text-white rounded py-1 px-3"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDelete(ingredient.id)}
+                                className="bg-red-600 hover:bg-red-700 text-white rounded py-1 px-3"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </>
+                      )}
                     </tr>
                   ))}
                 </tbody>

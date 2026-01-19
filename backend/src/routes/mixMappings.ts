@@ -188,7 +188,7 @@ router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) =>
       where: { id: mixMapping.locationId }
     });
 
-    if(!location) {
+    if (!location) {
       return res.status(404).json({ error: 'Location not found' })
     }
 

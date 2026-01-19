@@ -51,6 +51,24 @@ function Locations() {
     navigate("/login");
   };
 
+  // Delete mutation
+  const deleteIngredientMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await api.delete(`/ingredients/${id}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ingredients"] });
+    },
+  });
+
+  // Delete ingredient
+  const handleDelete = (id: string) => {
+    if (window.confirm("Delete this ingredient?")) {
+      deleteIngredientMutation.mutate(id);
+    }
+  };
+
   if (isLoading) return <div> Loading...</div>;
 
   return (
@@ -120,9 +138,12 @@ function Locations() {
                       <span className="text-lg font-medium">
                         {location.name}
                       </span>
-                      <span className="text-sm text-gray-500">
-                        {new Date(location.createdAt).toLocaleDateString()}
-                      </span>
+                      <button
+                        onClick={() => handleDelete(location.id)}
+                        className="bg-red-600 hover:bg-red-700 text-white rounded py-1 px-3"
+                      >
+                        Delete
+                      </button>
                     </div>
                   </li>
                 ))}
