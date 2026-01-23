@@ -125,9 +125,8 @@ export default function Ingredients() {
 
   // Save ingredient edit
   const handleSaveEdit = () => {
-     console.log('Save clicked', { editingIngredientId, editName, editPrice, editUnit });
+     
     if (editingIngredientId && editName && editPrice && editUnit) {
-      console.log('Calling mutation');
       updateIngredientMutation.mutate({
         id: editingIngredientId,
         name: editName,
