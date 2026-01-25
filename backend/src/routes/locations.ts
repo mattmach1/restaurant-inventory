@@ -111,4 +111,58 @@ router.delete(
     }
   }
 );
+
+router.patch(
+  "/:id",
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      if (!req.userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const { id } = req.params;
+
+      if (!id) {
+        return res.status(404).json({ error: "Location ID not found" });
+      }
+
+      const { name } = req.body;
+
+      if (!name) {
+        return res.status(404).json({ error: "Location name not found" });
+      }
+
+      const user = await prisma.user.findUnique({
+        where: { id: req.userId },
+      });
+
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const location = await prisma.location.findUnique({
+        where: { id: id },
+      });
+
+      if (!location) {
+        return res.status(404).json({ error: "Location not found" });
+      }
+
+      if (location.organizationId !== user.organizationId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      const updatedLocation = await prisma.location.update({
+        where: { id: id },
+        data: { name: name },
+      });
+
+      return res.status(200).json(updatedLocation);
+    } catch (error) {
+      console.error("Error updating location", error);
+      return res.status(500).json({ error: "Failed to update location" });
+    }
+  }
+);
 export default router;

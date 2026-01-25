@@ -15,6 +15,10 @@ function Locations() {
   const [isAdding, setIsAdding] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [editingLocationId, setEditingLocationId] = useState<string | null>(
+    null
+  );
+  const [editName, setEditName] = useState("");
 
   // Fetch locations
   const { data: locations, isLoading } = useQuery<Location[]>({
@@ -67,6 +71,43 @@ function Locations() {
     if (window.confirm("Delete this ingredient?")) {
       deleteIngredientMutation.mutate(id);
     }
+  };
+
+  // Edit mutation
+  const updateLocationMutation = useMutation({
+    mutationFn: async (data: { id: string; name: string }) => {
+      const response = await api.patch(`/locations/${data.id}`, {
+        name: data.name,
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["locations"] });
+    },
+  });
+
+  // Edit location
+  const handleEdit = (location: Location) => {
+    setEditingLocationId(location.id);
+    setEditName(location.name);
+  };
+
+  // Save location edit
+  const handleSaveEdit = () => {
+    if (editingLocationId && editName) {
+      updateLocationMutation.mutate({
+        id: editingLocationId,
+        name: editName,
+      });
+    } else {
+      console.log("Validation failed");
+    }
+  };
+
+  // Cancel location edit
+  const handleCancelEdit = () => {
+    setEditingLocationId(null);
+    setEditName("");
   };
 
   if (isLoading) return <div> Loading...</div>;
@@ -134,17 +175,54 @@ function Locations() {
               <ul className="divide-y divide-gray-200">
                 {locations.map((location) => (
                   <li key={location.id} className="px-6 py-4 hover:bg-gray-50">
-                    <div className="flex justify-between items-center">
-                      <span className="text-lg font-medium">
-                        {location.name}
-                      </span>
-                      <button
-                        onClick={() => handleDelete(location.id)}
-                        className="bg-red-600 hover:bg-red-700 text-white rounded py-1 px-3"
-                      >
-                        Delete
-                      </button>
-                    </div>
+                    {editingLocationId === location.id ? (
+                      <>
+                        <div className="flex justify-between items-center">
+                          <input
+                            type="text"
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            className="px-2 py-1 border border-gray-300 rounded"
+                          />
+                          <div className="flex gap-1">
+                            <button
+                              onClick={handleSaveEdit}
+                              className="bg-green-600 hover:bg-green-700 text-white rounded py-1 px-3"
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={handleCancelEdit}
+                              className="bg-gray-500 hover:bg-gray-600 text-white rounded py-1 px-3"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex justify-between items-center">
+                          <span className="text-lg font-medium">
+                            {location.name}
+                          </span>
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => handleEdit(location)}
+                              className="bg-blue-600 hover:bg-blue-700 text-white rounded py-1 px-3"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDelete(location.id)}
+                              className="bg-red-600 hover:bg-red-700 text-white rounded py-1 px-3"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </li>
                 ))}
               </ul>
