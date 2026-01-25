@@ -27,6 +27,7 @@ function MenuItems() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  // Fetch menu items
   const { data: menuItems, isLoading } = useQuery<MenuItem[]>({
     queryKey: ["menuItems"],
     queryFn: async () => {
@@ -35,6 +36,12 @@ function MenuItems() {
     },
   });
 
+  // Sort menu items alphabetically
+  const sortedMenuItems = menuItems?.sort((a, b) =>
+    a.name.localeCompare(b.name)
+  );
+
+  // Create menu item mutation
   const createMenuItemMutation = useMutation({
     mutationFn: async (data: { name: string; description?: string }) => {
       const response = await api.post("/menu-items", data);
@@ -47,6 +54,7 @@ function MenuItems() {
     },
   });
 
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.name) {
@@ -74,7 +82,7 @@ function MenuItems() {
     },
   });
 
-  // Delete Menu item
+  // Delete menu item
   const handleDelete = (id: string) => {
     if (window.confirm("Delete this Menu item?")) {
       deleteMenuItemMutation.mutate(id);
@@ -97,38 +105,38 @@ function MenuItems() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["menuItems"] });
       setEditingMenuItemId(null);
-      setEditName('');
-      setEditDescription('');
+      setEditName("");
+      setEditDescription("");
     },
   });
 
-  // Edit Menu item
+  // Edit menu item
   const handleEdit = (menuItem: MenuItem) => {
     setEditingMenuItemId(menuItem.id);
     setEditName(menuItem.name);
     setEditDescription(menuItem.description);
   };
 
-  // Save Menu item edit
+  // Save menu item edit
   const handleSaveEdit = () => {
     if (editingMenuItemId && editName && editDescription) {
       updateMenuItemMutation.mutate({
         id: editingMenuItemId,
         name: editName,
-        description: editDescription
+        description: editDescription,
       });
     } else {
-      console.log('Save edit failed')
+      console.log("Save edit failed");
     }
   };
 
-  // Cancel Menu item edit
+  // Cancel menu item edit
 
   const handleCancelEdit = () => {
     setEditingMenuItemId(null);
-    setEditName('');
-    setEditDescription('');
-  }
+    setEditName("");
+    setEditDescription("");
+  };
 
   if (isLoading) return <div>Loading...</div>;
 
@@ -212,7 +220,7 @@ function MenuItems() {
           <div className="bg-white shadow rounded-lg">
             {menuItems && menuItems.length > 0 ? (
               <ul className="divide-y divide-gray-200">
-                {menuItems.map((item) => (
+                {sortedMenuItems?.map((item) => (
                   <li key={item.id} className="px-6 py-4 hover:bg-gray-50">
                     {editingMenuItemId === item.id ? (
                       <>
@@ -227,7 +235,7 @@ function MenuItems() {
                         <td className="px-6 py-4">
                           <input
                             type="text"
-                            value={editDescription || ''}
+                            value={editDescription || ""}
                             onChange={(e) => setEditDescription(e.target.value)}
                             className="px-2 py-1 border border-gray-300 rounded"
                           />

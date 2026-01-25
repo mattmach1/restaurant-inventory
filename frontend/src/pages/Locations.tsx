@@ -29,6 +29,11 @@ function Locations() {
     },
   });
 
+  // Sort locations alphabetically
+  const sortedLocations = locations?.sort((a, b) =>
+    a.name.localeCompare(b.name)
+  );
+
   // Create location mutation
   const createLocationMutation = useMutation({
     mutationFn: async (name: string) => {
@@ -83,6 +88,8 @@ function Locations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["locations"] });
+      setEditingLocationId(null);
+      setEditName("");
     },
   });
 
@@ -173,7 +180,7 @@ function Locations() {
           <div className="bg-white shadow rounded-lg">
             {locations && locations.length > 0 ? (
               <ul className="divide-y divide-gray-200">
-                {locations.map((location) => (
+                {sortedLocations?.map((location) => (
                   <li key={location.id} className="px-6 py-4 hover:bg-gray-50">
                     {editingLocationId === location.id ? (
                       <>
