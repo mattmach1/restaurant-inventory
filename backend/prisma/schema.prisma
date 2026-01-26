@@ -35,7 +35,7 @@ model User {
   name           String
   email          String   @unique
   password       String
-  role           String
+  role           Role @default(MANAGER)
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
@@ -43,6 +43,11 @@ model User {
   organization Organization @relation(fields: [organizationId], references: [id])
 
   @@map("users")
+}
+
+enum Role {
+  ADMIN
+  MANAGER
 }
 
 model Location {

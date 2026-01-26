@@ -2,6 +2,7 @@ import { Router } from "express";
 import type { Request, Response } from "express";
 import { authMiddleware } from "../middleware/auth.js";
 import prisma from "../lib/prisma.js";
+import { requireRole } from "../middleware/requireRole.js";
 
 interface AuthRequest extends Request {
   userId?: string;
@@ -65,7 +66,7 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response) => {
 
 router.delete(
   "/:id",
-  authMiddleware,
+  authMiddleware, requireRole(['ADMIN']),
   async (req: AuthRequest, res: Response) => {
     try {
       if (!req.userId) {

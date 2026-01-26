@@ -1,7 +1,9 @@
-import { Router } from "express";
+import { Router, type Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import prisma from "../lib/prisma.js";
+import { authMiddleware, type AuthRequest } from "../middleware/auth.js";
+import { requireRole } from "../middleware/requireRole.js";
 
 const router = Router();
 
@@ -29,7 +31,7 @@ router.post("/register", async (req, res) => {
         password: hashedPassword,
         name,
         organizationId: organization.id,
-        role: "admin", // First user is admin
+        role: "ADMIN", // First user is admin
       },
     });
 
@@ -46,6 +48,7 @@ router.post("/register", async (req, res) => {
         email: user.email,
         name: user.name,
         organizationId: user.organizationId,
+        role: user.role,
       },
     });
   } catch (error) {
@@ -82,6 +85,7 @@ router.post("/login", async (req, res) => {
         email: user.email,
         name: user.name,
         organizationId: user.organizationId,
+        role: user.role,
       },
     });
   } catch (error) {
@@ -89,5 +93,66 @@ router.post("/login", async (req, res) => {
     return res.status(500).json({ error: "Login failed" });
   }
 });
+
+// Create new user (ADMIN only)
+router.post(
+  "/create-user",
+  authMiddleware,
+  requireRole(["ADMIN"]),
+  async (req: AuthRequest, res: Response) => {
+    try {
+      if (!req.userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const { email, password, name, role } = req.body;
+
+      // Get admin user to get their organizationId
+      const adminUser = await prisma.user.findUnique({
+        where: { id: req.userId },
+      });
+
+      if (!adminUser) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Check if email already exists
+      const existingUser = await prisma.user.findUnique({
+        where: { email },
+      });
+
+      if (existingUser) {
+        return res.status(400).json({ error: "Email already in use" });
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create user in the same organization as admin
+      const newUser = await prisma.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+          name,
+          organizationId: adminUser.organizationId,
+          role: role || "MANAGER", // Default to MANAGER if not specified
+        },
+      });
+
+      return res.status(201).json({
+        user: {
+          id: newUser.id,
+          email: newUser.email,
+          name: newUser.name,
+          role: newUser.role,
+          organizationId: newUser.organizationId,
+        },
+      });
+    } catch (error) {
+      console.error("Error creating user:", error);
+      return res.status(500).json({ error: "Failed to create user" });
+    }
+  }
+);
 
 export default router;
