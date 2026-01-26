@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import api from "../lib/api";
+import { useAuth } from "../hooks/useAuth";
 
 interface Location {
   id: string;
@@ -11,6 +12,7 @@ interface Location {
 }
 
 function Locations() {
+  const { isAdmin } = useAuth();
   const [newLocationName, setNewLocationName] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const navigate = useNavigate();
@@ -220,12 +222,14 @@ function Locations() {
                             >
                               Edit
                             </button>
-                            <button
-                              onClick={() => handleDelete(location.id)}
-                              className="bg-red-600 hover:bg-red-700 text-white rounded py-1 px-3"
-                            >
-                              Delete
-                            </button>
+                            {isAdmin && (
+                              <button
+                                onClick={() => handleDelete(location.id)}
+                                className="bg-red-600 hover:bg-red-700 text-white rounded py-1 px-3"
+                              >
+                                Delete
+                              </button>
+                            )}
                           </div>
                         </div>
                       </>

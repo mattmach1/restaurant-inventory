@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import api from "../lib/api";
+import { useAuth } from "../hooks/useAuth";
 
 interface MenuItem {
   id: string;
@@ -12,6 +13,7 @@ interface MenuItem {
 }
 
 function MenuItems() {
+  const { isAdmin } = useAuth();
   const [isAdding, setIsAdding] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -54,7 +56,6 @@ function MenuItems() {
     },
   });
 
-  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.name) {
@@ -274,12 +275,14 @@ function MenuItems() {
                           >
                             Edit
                           </button>
-                          <button
-                            onClick={() => handleDelete(item.id)}
-                            className="bg-red-600 hover:bg-red-700 text-white rounded py-1 px-3"
-                          >
-                            Delete
-                          </button>
+                          {isAdmin && (
+                            <button
+                              onClick={() => handleDelete(item.id)}
+                              className="bg-red-600 hover:bg-red-700 text-white rounded py-1 px-3"
+                            >
+                              Delete
+                            </button>
+                          )}
                         </div>
                       </div>
                     )}

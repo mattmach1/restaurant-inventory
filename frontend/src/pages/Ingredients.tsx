@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import api from "../lib/api";
+import { useAuth } from "../hooks/useAuth";
 
 interface Ingredient {
   id: string;
@@ -13,6 +14,12 @@ interface Ingredient {
 }
 
 export default function Ingredients() {
+  // Hooks
+  const { isAdmin } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  // State variables
   const [isAdding, setIsAdding] = useState(false);
   const [editingIngredientId, setEditingIngredientId] = useState<string | null>(
     null
@@ -20,14 +27,11 @@ export default function Ingredients() {
   const [editName, setEditName] = useState("");
   const [editPrice, setEditPrice] = useState("");
   const [editUnit, setEditUnit] = useState("");
-
   const [formData, setFormData] = useState({
     name: "",
     price: "",
     unit: "",
   });
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   // Fetch ingredients
   const { data: ingredients, isLoading } = useQuery<Ingredient[]>({
@@ -38,7 +42,7 @@ export default function Ingredients() {
     },
   });
 
-   // Sort ingredients alphabetically
+  // Sort ingredients alphabetically
   const sortedIngredients = ingredients?.sort((a, b) =>
     a.name.localeCompare(b.name)
   );
@@ -125,7 +129,6 @@ export default function Ingredients() {
 
   // Save ingredient edit
   const handleSaveEdit = () => {
-     
     if (editingIngredientId && editName && editPrice && editUnit) {
       updateIngredientMutation.mutate({
         id: editingIngredientId,
@@ -134,7 +137,7 @@ export default function Ingredients() {
         unit: editUnit,
       });
     } else {
-    console.log('Validation failed');
+      console.log("Validation failed");
     }
   };
 
@@ -322,12 +325,14 @@ export default function Ingredients() {
                               >
                                 Edit
                               </button>
-                              <button
-                                onClick={() => handleDelete(ingredient.id)}
-                                className="bg-red-600 hover:bg-red-700 text-white rounded py-1 px-3"
-                              >
-                                Delete
-                              </button>
+                              {isAdmin && (
+                                <button
+                                  onClick={() => handleDelete(ingredient.id)}
+                                  className="bg-red-600 hover:bg-red-700 text-white rounded py-1 px-3"
+                                >
+                                  Delete
+                                </button>
+                              )}
                             </div>
                           </td>
                         </>
