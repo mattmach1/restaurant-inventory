@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:5000/api',
+    baseURL: 'https://restaurant-inventory-production-8b22.up.railway.app/',
 });
 
 // Add token to request if it exists
