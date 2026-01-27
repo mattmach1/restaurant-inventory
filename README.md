@@ -17,8 +17,6 @@ Existing restaurant inventory tools like XtraChef require manually entering mix 
 
 **Solution:** This app allows you to create recipes at one location and copy the entire menu to other locations with a single click, saving significant time and reducing errors. 
 
-**Improvements:** In the future, adding an option to import a CSV or JSON file to automatically update menus would be even better.
-
 ## 🛠️ Tech Stack
 
 ### Frontend
