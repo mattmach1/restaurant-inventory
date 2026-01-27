@@ -139,7 +139,7 @@ router.post('/copy', authMiddleware, async (req: AuthRequest, res: Response) => 
 
         // Create new mappings at destination
         const newMappings = await prisma.mixMapping.createMany({
-            data: existingMappings.map(mapping => ({
+            data: existingMappings.map((mapping: any) => ({
                 menuItemId: mapping.menuItemId,
                 locationId: toLocationId,
                 ingredientId: mapping.ingredientId,
