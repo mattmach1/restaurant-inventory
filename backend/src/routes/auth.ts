@@ -155,4 +155,38 @@ router.post(
   }
 );
 
+// Get all users in organization (ADMIN only)
+router.get('/users', authMiddleware, requireRole(['ADMIN']), async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({ error: 'Unauthorized' })
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId }
+    })
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' })
+    }
+
+    const users = await prisma.user.findMany({
+      where: {organizationId: user.organizationId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    return res.status(200).json(users);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    return res.status(500).json({ error: 'Failed to fetch users' });
+  }
+})
+
 export default router;

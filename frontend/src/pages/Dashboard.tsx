@@ -1,23 +1,12 @@
 import { useNavigate, Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useAuth } from '../hooks/useAuth'
 
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  organizationId: string;
-}
 
 function Dashboard() {
   const navigate = useNavigate();
-
-  const getUserFromStorage = (): User | null => {
-    const userData = localStorage.getItem("user");
-    return userData ? JSON.parse(userData) : null;
-  };
-
-  const [user] = useState<User | null>(getUserFromStorage());
-
+  const { user, isAdmin } = useAuth();
+ 
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -43,7 +32,10 @@ function Dashboard() {
             <h1 className="text-xl font-bold">Restaurant Inventory</h1>
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600">
-                {user.name} {user.email}
+                {user.name} {user.email} {" "}
+                { isAdmin && (
+                  <Link to='/users' className="font-bold underline">Users</Link>
+                )}
               </span>
               <button
                 onClick={handleLogout}
@@ -98,7 +90,7 @@ function Dashboard() {
             >
               <h3 className="text-lg font-semibold mb-2">Recipes</h3>
               <p className="text-gray-600 text-sm">
-                Manage mix mappings & copy menus
+                Manage mix mappings
               </p>
             </Link>
           </div>

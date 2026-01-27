@@ -6,6 +6,7 @@ import Locations from "./pages/Locations";
 import Ingredients from "./pages/Ingredients";
 import MenuItems from "./pages/MenuItems";
 import Recipes from "./pages/Recipes";
+import Users from './pages/Users';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/ingredients" element={<Ingredients />} />
         <Route path="/menu-items" element={<MenuItems />} />
         <Route path="/recipes" element={<Recipes />} />
+        <Route path="/users" element={<Users />} />
       </Routes>
     </BrowserRouter>
   );
