@@ -120,6 +120,18 @@ The app will be available at `http://localhost:5173`
 ### Dashboard
 ![Dashboard](./screenshots/dashboard.png)
 
+### User Management
+![User Management](./screenshots/users.png)
+
+### Ingredients
+![Ingredients](./screenshots/ingredients.png)
+
+### Locations
+![Locations](./screenshots/locations.png)
+
+### Menu Items
+![Menu Items](./screenshots/menu-items.png)
+
 ### Recipe Management
 ![Recipes](./screenshots/recipes.png)
 
