@@ -115,6 +115,19 @@ The app will be available at `http://localhost:5173`
 5. **Build Recipes** - Select a location and menu item, then add ingredients with quantities
 6. **Copy Menu** - Use the bulk copy feature to duplicate recipes to other locations
 
+## Screenshots
+
+### Dashboard
+![Dashboard](./screenshots/dashboard.png)
+
+### Recipe Management
+![Recipes](./screenshots/recipes.png)
+
+![Recipes](./screenshots/recipes-expanded.png)
+
+### Bulk Copy Feature
+![Bulk Copy](./screenshots/copy-menu.png)
+
 ## 🔐 API Endpoints
 
 ### Authentication
