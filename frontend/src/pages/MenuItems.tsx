@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
 import api from "../lib/api";
 import { useAuth } from "../hooks/useAuth";
+import Navbar from "@/components/Navbar";
 
 interface MenuItem {
   id: string;
@@ -26,7 +26,6 @@ function MenuItems() {
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState<string | null>("");
 
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   // Fetch menu items
@@ -66,11 +65,6 @@ function MenuItems() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/login");
-  };
 
   // Delete mutation
   const deleteMenuItemMutation = useMutation({
@@ -143,24 +137,7 @@ function MenuItems() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center gap-4">
-              <h1 className="text-xl font-bold">Restaurant Inventory</h1>
-              <a href="/dashboard" className="text-blue-600 hover:underline">
-                Dashboard
-              </a>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
